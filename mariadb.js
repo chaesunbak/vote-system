@@ -6,28 +6,50 @@
 // 단점: 설정이 약간 더 복잡할 수 있습니다.
 
 // Get the client
-import mysql from "mysql2/promise";
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Create the connection to database
-// 환경변수에 DB_NAME을 추가해주세요.
-const connection = await mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "root",
-  database: Process.env.DB_NAME,
-  dateStrings: true,
-});
-
-// Create the connection pool to database
-// const pool = mysql.createPool({
+// const connection = await mysql.createConnection({
 //   host: "localhost",
 //   user: "root",
 //   password: "root",
 //   database: Process.env.DB_NAME,
-//   waitForConnections: true,
-//   connectionLimit: 10,
-//   queueLimit: 0,
 //   dateStrings: true,
 // });
 
-export default connection;
+// 설정 예시
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: 'root',
+  database: process.env.DB_NAME,
+  waitForConnections: true, // 커넥션 풀이 가득 찼을 때 대기
+  connectionLimit: 10, // 최대 커넥션 수
+  queueLimit: 0, // 대기 큐 제한 없음
+  maxIdle: 10, // 유휴 커넥션 최대 수
+  idleTimeout: 60000, // 유휴 커넥션 타임아웃 (60초) (디폴트)
+  enableKeepAlive: true, // 커넥션 유지
+  keepAliveInitialDelay: 0, // keepalive 초기 딜레이
+  dateStrings: true,
+});
+
+// 사용법 예시 코드
+
+// import pool from './mariadb.js';
+
+// export async function getData() {
+//   try {
+//     // For pool initialization, see above
+//     const [rows, fields] = await pool.query('SELECT `field` FROM `table`');
+//     // Connection is automatically released when query resolves
+//   } catch (err) {
+//     console.log(err);
+//   }
+// }
+
+// https://sidorares.github.io/node-mysql2/docs
+
+export default pool;
