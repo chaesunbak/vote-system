@@ -1,19 +1,24 @@
-import pool from '../mariadb.js';
+import pool from '../mariadb.js';
 import { StatusCodes } from 'http-status-codes';
 
 // 설문에 응답하기 (POST /surveys/:survey_id/responses)
-export const createResponse = (req, res) => {
+export const createResponse = async (req, res) => {
   const { survey_id } = req.params;
   const { user_id, answers } = req.body; // answers는 [{ question_id, option_id, answer_text }, ...] 형태로 전달
 
   try {
-
     for (const answer of answers) {
       const { question_id, option_id, answer_text } = answer;
 
       const [rows, fields] = await pool.execute(
         'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-        [survey_id, user_id, question_id, option_id || null, answer_text || null]
+        [
+          survey_id,
+          user_id,
+          question_id,
+          option_id || null,
+          answer_text || null,
+        ],
       );
 
       if (rows.affectedRows === 0) {
@@ -23,15 +28,14 @@ export const createResponse = (req, res) => {
       }
 
       return res
-      .status(StatusCodes.CREATED)
-      .json({ message: 'Response submitted successfully' })
+        .status(StatusCodes.CREATED)
+        .json({ message: 'Response submitted successfully' });
     }
-
   } catch (error) {
     console.log(error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: 'Failed to submit response'});
+      .json({ error: 'Failed to submit response' });
   }
 };
 
@@ -39,19 +43,19 @@ export const createResponse = (req, res) => {
 export const editResponse = async (req, res) => {
   const { survey_id, response_id } = req.params;
   const { answers } = req.body;
-  
+
   try {
     // 1. 기존 응답 삭제
     const [rows, fields] = await pool.execute(
       'DELETE FROM responses WHERE id = ?',
-      [response_id]
-    )
+      [response_id],
+    );
     if (rows.affectedRows === 0) {
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({ error: 'Failed to delete previous responses' });
     }
-    
+
     // 2. 수정된 answers 데이터를 responses 테이블에 다시 삽입
 
     for (const answer of answers) {
@@ -59,7 +63,13 @@ export const editResponse = async (req, res) => {
 
       const [rows, fields] = await pool.execute(
         'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-        [survey_id, response_id, question_id, option_id || null, answer_text || null]
+        [
+          survey_id,
+          response_id,
+          question_id,
+          option_id || null,
+          answer_text || null,
+        ],
       );
 
       if (rows.affectedRows === 0) {
@@ -87,7 +97,7 @@ export const deleteResponse = async (req, res) => {
   try {
     const [rows, fields] = await pool.execute(
       'DELETE FROM responses WHERE id = ?',
-      [response_id]
+      [response_id],
     );
   } catch (error) {
     console.log(error);
