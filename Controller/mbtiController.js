@@ -1,10 +1,10 @@
-const pool = require('../mariadb');
-const { StatusCodes } = require('http-status-codes');
+import pool from '../mariadb.js';
+import { StatusCodes } from 'http-status-codes';
 
-const CreateMBTI = async (req, res) => {
+export const createMbti = async (req, res) => {
   try {
     const { mbti_data } = req.body;
-    return await GetMBTI(mbti_data);
+    return await getMbti(mbti_data);
   } catch (err) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: 'Failed to create MBTI',
@@ -14,7 +14,7 @@ const CreateMBTI = async (req, res) => {
 };
 
 // 사용자가 설문에 응답할 시 설문에 AI로 설정된 데이터 값을 통해 사용자의 MBTI 비율을 수치로 변동
-const MBTI_Update = async (req, res) => {
+export const updateMbti = async (req, res) => {
   const { userId, question_mbti_data } = req.body;
 
   let query = `UPDATE users 
@@ -55,7 +55,7 @@ const MBTI_Update = async (req, res) => {
 };
 
 // MBTI에 있는 JSON 데이터 출력
-const GetMBTIData = async (req, res) => {
+const getbtiData = async (req, res) => {
   const { userId } = req.params;
   let query = `SELECT mbti FROM users WHERE user_id = ?`;
 
@@ -77,7 +77,7 @@ const GetMBTIData = async (req, res) => {
 };
 
 // 사용자의 4자리 MBTI 텍스트 출력
-const GetMBTIText = async (req, res) => {
+export const getMbtiext = async (req, res) => {
   const { userId } = req.params;
   let MBTI = '';
   let query = `SELECT mbti FROM users WHERE user_id = ?`;
@@ -105,7 +105,7 @@ const GetMBTIText = async (req, res) => {
   }
 };
 
-async function GetMBTI(mbti_data) {
+export async function getMbti(mbti_data) {
   let query = `UPDATE users 
                  SET mbti_detail = JSON_OBJECT(
                     'extrovert', ?, 
@@ -134,5 +134,3 @@ async function GetMBTI(mbti_data) {
     throw new Error('Failed to update MBTI');
   }
 }
-
-module.exports = { CreateMBTI, MBTI_Update, GetMBTIText, GetMBTIData };

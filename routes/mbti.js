@@ -1,21 +1,21 @@
-const express = require('express');
-const {
-	CreateMBTI,
-	MBTI_Update,
-	GetMBTIText,
-	GetMBTIData
-} = require('../Controller/mbtiController');
+import { Router } from 'express';
+import {
+  createMbti,
+  updateMbti,
+  getMbtiData,
+  getMbtiText,
+} from '../controllers/mbtiController.js';
 
-const router = express.Router();
+const router = Router();
 
 router.use(express.json());
 
-router.post('/createMBTI', CreateMBTI);
+router.post('/createMBTI', createMbti);
 
-router.post('/vote', MBTI_Update);
+router.post('/vote', updateMbti);
 
-router.get('/getMBTI', GetMBTIText);
+router.get('/getMBTI', getMbtiText);
 
-router.post('/getMBTIData', GetMBTIData);
+router.post('/getMBTIData', getMbtiData);
 
-module.exports = router;
+export default router;
