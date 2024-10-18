@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 // 설문에 응답하기 (POST /surveys/:survey_id/responses)
 export const createResponse = async (req, res) => {
-  const { survey_id } = req.params;
+  const { survey_id } = req.params.survey_id;
   const { user_id, answers } = req.body; // answers는 [{ question_id, option_id, answer_text }, ...] 형태로 전달
 
   try {
@@ -92,7 +92,7 @@ export const editResponse = async (req, res) => {
 
 // 응답 삭제하기 (DELETE /surveys/:survey_id/responses/:response_id)
 export const deleteResponse = async (req, res) => {
-  const { response_id } = req.params;
+  const { survey_id, response_id } = req.params;
 
   try {
     const [rows, fields] = await pool.execute(
