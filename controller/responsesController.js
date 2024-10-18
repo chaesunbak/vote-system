@@ -2,7 +2,7 @@ const { StatusCodes } = require('http-status-codes');
 const connection = require('../mariadb');
 
 // 설문에 응답하기 (POST /surveys/:survey_id/responses)
-const responseVote = (req, res) => {
+const createResponse = (req, res) => {
   const { survey_id } = req.params;
   const { user_id, answers } = req.body; // answers는 [{ question_id, option_id, answer_text }, ...] 형태로 전달
 
@@ -16,18 +16,22 @@ const responseVote = (req, res) => {
       (err) => {
         if (err) {
           console.error(err);
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to submit response' });
+          return res
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .json({ error: 'Failed to submit response' });
         }
-      }
+      },
     );
-  } 
+  }
 
   // 응답 완료 후 성공 메시지 반환
-  res.status(StatusCodes.CREATED).json({ message: 'Response submitted successfully' });
+  res
+    .status(StatusCodes.CREATED)
+    .json({ message: 'Response submitted successfully' });
 };
 
 // 응답 수정하기 (PUT /surveys/:survey_id/responses/:response_id)
-const responseEdit = (req, res) => {
+const editResponse = (req, res) => {
   const { survey_id, response_id } = req.params;
   const { answers } = req.body;
 
@@ -38,7 +42,9 @@ const responseEdit = (req, res) => {
     (err) => {
       if (err) {
         console.error(err);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to delete previous responses' });
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ error: 'Failed to delete previous responses' });
       }
 
       // 2. 수정된 answers 데이터를 responses 테이블에 다시 삽입
@@ -47,23 +53,33 @@ const responseEdit = (req, res) => {
 
         connection.query(
           'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-          [survey_id, response_id, question_id, option_id || null, answer_text || null],
+          [
+            survey_id,
+            response_id,
+            question_id,
+            option_id || null,
+            answer_text || null,
+          ],
           (err) => {
             if (err) {
               console.error(err);
-              return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update responses' });
+              return res
+                .status(StatusCodes.INTERNAL_SERVER_ERROR)
+                .json({ error: 'Failed to update responses' });
             }
-          }
+          },
         );
       }
 
-      res.status(StatusCodes.OK).json({ message: 'Response updated successfully' });
-    }
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Response updated successfully' });
+    },
   );
 };
 
 // 응답 삭제하기 (DELETE /surveys/:survey_id/responses/:response_id)
-const responseDelete = (req, res) => {
+const deleteResponse = (req, res) => {
   const { response_id } = req.params;
 
   connection.query(
@@ -72,11 +88,13 @@ const responseDelete = (req, res) => {
     (err) => {
       if (err) {
         console.error(err);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to delete response' });
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ error: 'Failed to delete response' });
       }
 
       res.status(StatusCodes.NO_CONTENT).send();
-    }
+    },
   );
 };
 
