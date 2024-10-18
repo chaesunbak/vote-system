@@ -1,7 +1,7 @@
 import pool from '../mariadb.js';
 import { StatusCodes } from 'http-status-codes';
 
-const showMostChoiced = async (req, res) => {
+export const showMostChoiced = async (req, res) => {
   try {
     const surveyId = req.params.id;
     let { mbti } = req.query;
@@ -78,7 +78,7 @@ const showMostChoiced = async (req, res) => {
   }
 };
 
-const showResult = async (req, res) => {
+export const showResult = async (req, res) => {
   const surveyId = req.params.id;
   try {
     let sql = `SELECT option_id, COUNT(*) AS count FROM answer_choices
@@ -104,5 +104,3 @@ const showResult = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).end();
   }
 };
-
-export default { showMostChoiced, showResult };
