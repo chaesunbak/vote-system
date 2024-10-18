@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 // 설문에 응답하기 (POST /surveys/:survey_id/responses)
 export const createResponse = async (req, res) => {
-  const { survey_id } = req.params.survey_id;
+  const surveyId = req.params.survey_id;
   const { user_id, answers } = req.body; // answers는 [{ question_id, option_id, answer_text }, ...] 형태로 전달
 
   try {
@@ -12,13 +12,7 @@ export const createResponse = async (req, res) => {
 
       const [rows, fields] = await pool.execute(
         'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-        [
-          survey_id,
-          user_id,
-          question_id,
-          option_id || null,
-          answer_text || null,
-        ],
+        [surveyId, user_id, question_id, option_id, answer_text],
       );
 
       if (rows.affectedRows === 0) {
