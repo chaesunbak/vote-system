@@ -1,9 +1,9 @@
-import express from 'express';
-const router = express.Router();
+import { Router } from 'express';
+import { showResult, showMostChoiced } from '../controller/statController.js';
 
-import utils from '../controller/StatController.js';
+const router = Router({ mergeParams: true });
 
-router.get('/:id/stats', utils.showResult);
-router.get('/:id/stats/detail', utils.showMostChoiced);
+router.get('/', showResult);
+router.get('/detail', showMostChoiced);
 
 export default router;
