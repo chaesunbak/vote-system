@@ -1,33 +1,38 @@
-const { StatusCodes } = require('http-status-codes');
-const connection = require('../mariadb');
+import pool from '../mariadb.js';
+import { StatusCodes } from 'http-status-codes';
 
 // 설문에 응답하기 (POST /surveys/:survey_id/responses)
 export const createResponse = (req, res) => {
   const { survey_id } = req.params;
   const { user_id, answers } = req.body; // answers는 [{ question_id, option_id, answer_text }, ...] 형태로 전달
 
-  // 1. responses 테이블에 각 질문과 그에 대한 응답을 함께 삽입
-  for (const answer of answers) {
-    const { question_id, option_id, answer_text } = answer;
+  try {
 
-    connection.query(
-      'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-      [survey_id, user_id, question_id, option_id || null, answer_text || null],
-      (err) => {
-        if (err) {
-          console.error(err);
-          return res
-            .status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .json({ error: 'Failed to submit response' });
-        }
-      },
-    );
+    for (const answer of answers) {
+      const { question_id, option_id, answer_text } = answer;
+
+      const [rows, fields] = await pool.execute(
+        'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
+        [survey_id, user_id, question_id, option_id || null, answer_text || null]
+      );
+
+      if (rows.affectedRows === 0) {
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ error: 'Failed to submit response' });
+      }
+
+      return res
+      .status(StatusCodes.CREATED)
+      .json({ message: 'Response submitted successfully' })
+    }
+
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: 'Failed to submit response'});
   }
-
-  // 응답 완료 후 성공 메시지 반환
-  res
-    .status(StatusCodes.CREATED)
-    .json({ message: 'Response submitted successfully' });
 };
 
 // 응답 수정하기 (PUT /surveys/:survey_id/responses/:response_id)
