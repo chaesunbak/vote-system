@@ -1,10 +1,11 @@
-const express = require('express');
-const router = express.Router({ mergeParams: true }); // poll_id를 받기 위해 mergeParams 사용
+import { Router } from 'express';
 const {
   responseVote,
   responseEdit,
   responseDelete,
 } = require('../controller/responsesController'); // 컨트롤러 불러옴
+
+const router = Router();
 
 // 설문에 응답하기
 router.post('/', responseVote);
