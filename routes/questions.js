@@ -7,7 +7,8 @@ import {
   deleteQuestion,
   deleteOption,
 } from '../controller/QuestionController.js';
-const router = Router();
+
+const router = Router({ mergeParams: true });
 
 router.post('/', addQuestion); // 질문 추가
 router.get('/', allQuestion); // 질문 조회

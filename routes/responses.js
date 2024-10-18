@@ -5,7 +5,7 @@ import {
   deleteResponse,
 } from '../controller/responsesController.js';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // 설문에 응답하기
 router.post('/', createResponse);
