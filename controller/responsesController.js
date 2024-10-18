@@ -36,51 +36,48 @@ export const createResponse = (req, res) => {
 };
 
 // 응답 수정하기 (PUT /surveys/:survey_id/responses/:response_id)
-export const editResponse = (req, res) => {
+export const editResponse = async (req, res) => {
   const { survey_id, response_id } = req.params;
   const { answers } = req.body;
+  
+  try {
+    // 1. 기존 응답 삭제
+    const [rows, fields] = await pool.execute(
+      'DELETE FROM responses WHERE id = ?',
+      [response_id]
+    )
+    if (rows.affectedRows === 0) {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Failed to delete previous responses' });
+    }
+    
+    // 2. 수정된 answers 데이터를 responses 테이블에 다시 삽입
 
-  // 1. 기존 응답 삭제
-  connection.query(
-    'DELETE FROM responses WHERE id = ?',
-    [response_id],
-    (err) => {
-      if (err) {
-        console.error(err);
+    for (const answer of answers) {
+      const { question_id, option_id, answer_text } = answer;
+
+      const [rows, fields] = await pool.execute(
+        'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
+        [survey_id, response_id, question_id, option_id || null, answer_text || null]
+      );
+
+      if (rows.affectedRows === 0) {
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ error: 'Failed to delete previous responses' });
+          .json({ error: 'Failed to update responses' });
       }
+    }
 
-      // 2. 수정된 answers 데이터를 responses 테이블에 다시 삽입
-      for (const answer of answers) {
-        const { question_id, option_id, answer_text } = answer;
-
-        connection.query(
-          'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-          [
-            survey_id,
-            response_id,
-            question_id,
-            option_id || null,
-            answer_text || null,
-          ],
-          (err) => {
-            if (err) {
-              console.error(err);
-              return res
-                .status(StatusCodes.INTERNAL_SERVER_ERROR)
-                .json({ error: 'Failed to update responses' });
-            }
-          },
-        );
-      }
-
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Response updated successfully' });
-    },
-  );
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Response updated successfully' });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: 'Failed to update responses' });
+  }
 };
 
 // 응답 삭제하기 (DELETE /surveys/:survey_id/responses/:response_id)
