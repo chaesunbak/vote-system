@@ -5,7 +5,7 @@ import {
   getSurveyById,
   updateSurvey,
   deleteSurvey,
-} from '../controller/surveysController';
+} from '../controller/surveysController.js';
 
 const router = Router();
 

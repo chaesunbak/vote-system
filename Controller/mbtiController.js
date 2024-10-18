@@ -55,7 +55,7 @@ export const updateMbti = async (req, res) => {
 };
 
 // MBTI에 있는 JSON 데이터 출력
-const getbtiData = async (req, res) => {
+export const getMbtiData = async (req, res) => {
   const { userId } = req.params;
   let query = `SELECT mbti FROM users WHERE user_id = ?`;
 
@@ -77,7 +77,7 @@ const getbtiData = async (req, res) => {
 };
 
 // 사용자의 4자리 MBTI 텍스트 출력
-export const getMbtiext = async (req, res) => {
+export const getMbtiText = async (req, res) => {
   const { userId } = req.params;
   let MBTI = '';
   let query = `SELECT mbti FROM users WHERE user_id = ?`;

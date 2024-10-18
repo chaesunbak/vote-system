@@ -3,7 +3,7 @@ import {
   createResponse,
   editResponse,
   deleteResponse,
-} from '../controllers/responsesController.js';
+} from '../controller/responsesController.js';
 
 const router = Router();
 

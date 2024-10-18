@@ -4,7 +4,7 @@ import {
   updateMbti,
   getMbtiData,
   getMbtiText,
-} from '../controllers/mbtiController.js';
+} from '../controller/mbtiController.js';
 
 const router = Router();
 

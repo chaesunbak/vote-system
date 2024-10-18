@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { showResult, showMostChoiced } from '../controllers/statsController.js';
+import { showResult, showMostChoiced } from '../controller/statController.js';
 const router = Router();
 
 router.get('/stats', showResult);
