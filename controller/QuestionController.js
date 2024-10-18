@@ -133,7 +133,7 @@ export const deleteQuestion = async (req, res) => {
   }
 };
 // ???
-export const deleteOptions = async (req, res) => {
+export const deleteOption = async (req, res) => {
   const surveyId = req.params.survey_id;
   const questionId = req.params.question_id;
   const optionId = req.params.option_id;
