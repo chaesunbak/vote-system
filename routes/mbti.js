@@ -8,8 +8,6 @@ import {
 
 const router = Router();
 
-router.use(express.json());
-
 router.post('/createMBTI', createMbti);
 
 router.post('/vote', updateMbti);
