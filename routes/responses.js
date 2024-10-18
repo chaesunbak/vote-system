@@ -1,9 +1,9 @@
 import { Router } from 'express';
-const {
+import {
   createResponse,
   editResponse,
   deleteResponse,
-} = require('../controller/responsesController'); // 컨트롤러 불러옴
+} from '../controllers/responsesController.js';
 
 const router = Router();
 
@@ -16,4 +16,4 @@ router.put('/:response_id', editResponse);
 // 응답 삭제하기
 router.delete('/:response_id', deleteResponse);
 
-module.exports = router;
+export default router;

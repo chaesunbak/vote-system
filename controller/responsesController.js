@@ -2,7 +2,7 @@ const { StatusCodes } = require('http-status-codes');
 const connection = require('../mariadb');
 
 // 설문에 응답하기 (POST /surveys/:survey_id/responses)
-const createResponse = (req, res) => {
+export const createResponse = (req, res) => {
   const { survey_id } = req.params;
   const { user_id, answers } = req.body; // answers는 [{ question_id, option_id, answer_text }, ...] 형태로 전달
 
@@ -31,7 +31,7 @@ const createResponse = (req, res) => {
 };
 
 // 응답 수정하기 (PUT /surveys/:survey_id/responses/:response_id)
-const editResponse = (req, res) => {
+export const editResponse = (req, res) => {
   const { survey_id, response_id } = req.params;
   const { answers } = req.body;
 
@@ -79,7 +79,7 @@ const editResponse = (req, res) => {
 };
 
 // 응답 삭제하기 (DELETE /surveys/:survey_id/responses/:response_id)
-const deleteResponse = (req, res) => {
+export const deleteResponse = (req, res) => {
   const { response_id } = req.params;
 
   connection.query(
@@ -96,10 +96,4 @@ const deleteResponse = (req, res) => {
       res.status(StatusCodes.NO_CONTENT).send();
     },
   );
-};
-
-module.exports = {
-  responseVote,
-  responseEdit,
-  responseDelete,
 };
