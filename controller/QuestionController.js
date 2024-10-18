@@ -2,9 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 import pool from '../mariadb.js';
 
 export const addQuestion = async (req, res) => {
+  const surveyId = req.params.survey_id;
   const { question_text, question_type, order_num, required, options } =
     req.body;
-  const surveyId = req.params.id;
 
   // questions 테이블 삽입
   let questions_sql = `INSERT INTO questions (survey_id, question_text, question_type, order_num, required) VALUES (?, ?, ?, ?, ?);`;
@@ -37,14 +37,14 @@ export const addQuestion = async (req, res) => {
 };
 
 export const allQuestion = async (req, res) => {
-  let { id } = req.params;
+  const surveyId = req.params.survey_id;
   let sql = `SELECT question_id, question_text, question_type , option_text 
                 FROM questions LEFT JOIN question_options
                 ON questions.id = question_options.question_id
                 WHERE question_id = ?;`;
 
   try {
-    const [rows, fields] = await pool.execute(sql, id);
+    const [rows, fields] = await pool.execute(sql, surveyId);
 
     if (rows.length === 0) {
       return res.status(StatusCodes.NOT_FOUND).end();
@@ -57,15 +57,16 @@ export const allQuestion = async (req, res) => {
 };
 
 export const editQuestion = async (req, res) => {
+  const surveyId = req.params.survey_id;
+  const questionId = req.params.question_id;
   let { question_text, question_type } = req.body;
-  let { id } = req.params;
 
   // 질문 수정
   const sql = `UPDATE questions
      SET question_text = ?,
      question_type = ?
      WHERE id = ?;`; // 여기서 id는 question_id
-  const values = [question_text, question_type, id];
+  const values = [question_text, question_type, questionId];
 
   try {
     const [rows, fields] = await pool.execute(sql, values);
@@ -82,8 +83,11 @@ export const editQuestion = async (req, res) => {
 };
 
 export const editOptions = async (req, res) => {
+  const surveyId = req.params.survey_id;
+  const questionId = req.params.question_id;
+  const optionId = req.params.option_id;
   let { option_text } = req.body;
-  let { question_id, option_id } = req.params;
+
   let sql;
   let values = [];
 
@@ -92,7 +96,7 @@ export const editOptions = async (req, res) => {
     sql = `UPDATE question_options
         SET option_text = ?
         WHERE question_id = ? AND question_num = ?`;
-    values = [option_text, question_id, option_id];
+    values = [option_text, questionId, optionId];
   }
 
   try {
@@ -110,12 +114,13 @@ export const editOptions = async (req, res) => {
 };
 
 export const deleteQuestion = async (req, res) => {
-  const { question_id } = req.params;
+  const surveyId = req.params.survey_id;
+  const questionId = req.params.question_id;
 
   const question_sql = `DELETE FROM questions WHERE id = ?;`;
 
   try {
-    const [rows, fields] = await pool.execute(question_sql, question_id);
+    const [rows, fields] = await pool.execute(question_sql, questionId);
 
     if (rows.affectedRows === 0) {
       return res.status(StatusCodes.NOT_FOUND).end();
@@ -127,14 +132,16 @@ export const deleteQuestion = async (req, res) => {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
   }
 };
-
+// ???
 export const deleteOptions = async (req, res) => {
-  let { option_id } = req.params;
+  const surveyId = req.params.survey_id;
+  const questionId = req.params.question_id;
+  const optionId = req.params.option_id;
 
-  const option_sql = `DELETE FROM question_options WHERE question_num = ?;`;
+  const option_sql = `DELETE FROM question_options WHERE option_id = ?;`; // question_num에서 option_id로 변경
 
   try {
-    const [rows, fields] = await pool.execute(option_sql, option_id);
+    const [rows, fields] = await pool.execute(option_sql, optionId);
 
     if (rows.affectedRows === 0) {
       return res.status(StatusCodes.NOT_FOUND).end();
