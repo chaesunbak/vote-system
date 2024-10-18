@@ -81,21 +81,18 @@ export const editResponse = async (req, res) => {
 };
 
 // 응답 삭제하기 (DELETE /surveys/:survey_id/responses/:response_id)
-export const deleteResponse = (req, res) => {
+export const deleteResponse = async (req, res) => {
   const { response_id } = req.params;
 
-  connection.query(
-    'DELETE FROM responses WHERE id = ?',
-    [response_id],
-    (err) => {
-      if (err) {
-        console.error(err);
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ error: 'Failed to delete response' });
-      }
-
-      res.status(StatusCodes.NO_CONTENT).send();
-    },
-  );
+  try {
+    const [rows, fields] = await pool.execute(
+      'DELETE FROM responses WHERE id = ?',
+      [response_id]
+    );
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: 'Failed to delete response' });
+  }
 };
