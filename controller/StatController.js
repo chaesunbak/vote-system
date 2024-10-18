@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 export const showMostChoiced = async (req, res) => {
   try {
-    const surveyId = req.params.id;
+    const surveyId = req.params.surveyId;
     let { mbti } = req.query;
     mbti = mbti === 'true';
 
@@ -79,7 +79,7 @@ export const showMostChoiced = async (req, res) => {
 };
 
 export const showResult = async (req, res) => {
-  const surveyId = req.params.id;
+  const surveyId = req.params.surveyId;
   try {
     let sql = `SELECT option_id, COUNT(*) AS count FROM answer_choices
              WHERE question_id = ? GROUP BY option_id; `;
