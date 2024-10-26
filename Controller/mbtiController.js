@@ -5,10 +5,12 @@ export const createMbti = async (req, res) => {
   try {
     const { mbti_data } = req.body;
     return await getMbti(mbti_data);
-  } catch (err) {
+  } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Failed to create MBTI',
-      error: err,
+      error: {
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Failed to update MBTI',
+      },
     });
   }
 };
