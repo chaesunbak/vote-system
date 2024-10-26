@@ -45,7 +45,11 @@ export const createSurvey = async (req, res) => {
     return res.status(StatusCodes.CREATED).end();
   } catch (error) {
     console.log(error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to create survey',
+    });
   }
 };
 
@@ -67,26 +71,27 @@ export const getSurveys = (req, res) => {
 export const getSurveyById = (req, res) => {
   const { survey_id } = req.params;
 
-  connection.query(
-    'SELECT * FROM surveys WHERE id = ?',
-    [survey_id],
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ error: 'Failed to retrieve survey' });
-      }
+  try {
+    const [rows, fields] = await pool.execute('SELECT * FROM surveys WHERE id = ?', [survey_id]);
 
-      if (results.length === 0) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .json({ message: 'Survey not found' });
-      }
+    if (rows.length === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Survey not found',
+      });
+    }
 
-      res.status(StatusCodes.OK).json(results[0]);
-    },
-  );
+    return res.status(StatusCodes.OK).json(rows[0]);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to retrieve survey',
+    });
+  }
 };
 
 // 설문조사 수정하기 (PUT /surveys/:survey_id)
@@ -94,36 +99,54 @@ export const updateSurvey = (req, res) => {
   const { survey_id } = req.params;
   const { title, description, expires_at } = req.body;
 
-  connection.query(
-    'UPDATE surveys SET title = ?, description = ?, expires_at = ? WHERE id = ?',
-    [title, description, expires_at, survey_id],
-    (err) => {
-      if (err) {
-        console.error(err);
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ error: 'Failed to update survey' });
-      }
+  try {
+    const [rows, fields] = await pool.execute(
+      'UPDATE surveys SET title = ?, description = ?, expires_at = ? WHERE id = ?',
+      [title, description, expires_at, survey_id],
+    );
 
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Survey updated successfully' });
-    },
-  );
+    if (rows.affectedRows === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Survey not found',
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({ message: 'Survey updated successfully' });
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to update survey',
+    });
+  }
 };
 
 // 설문조사 삭제하기 (DELETE /surveys/:survey_id)
 export const deleteSurvey = (req, res) => {
   const { survey_id } = req.params;
 
-  connection.query('DELETE FROM surveys WHERE id = ?', [survey_id], (err) => {
-    if (err) {
-      console.error(err);
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: 'Failed to delete survey' });
+  try {
+    const [rows, fields] = await pool.execute('DELETE FROM surveys WHERE id = ?', [survey_id]);
+
+    if(rows.affectedRows === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Survey not found',
+      });
     }
 
-    res.status(StatusCodes.NO_CONTENT).send();
-  });
+    return res.status(StatusCodes.OK).json({ message: 'Survey deleted successfully' });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to delete survey',
+    });
+  }
 };
