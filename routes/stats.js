@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { showResult, showMostChoiced } from '../controller/statController.js';
+import { showResult, showMostChoiced } from '../Controller/StatController.js';
 
 const router = Router({ mergeParams: true });
 
