@@ -12,7 +12,7 @@ export const createResponse = async (req, res) => {
 
       const [rows, fields] = await pool.execute(
         'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-        [surveyId, user_id, question_id, option_id || 0, answer_text || ''],
+        [surveyId, user_id, question_id, option_id || null, answer_text || null],
       );
 
       if (rows.affectedRows === 0) {
