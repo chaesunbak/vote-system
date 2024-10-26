@@ -12,13 +12,21 @@ export const createResponse = async (req, res) => {
 
       const [rows, fields] = await pool.execute(
         'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-        [surveyId, user_id, question_id, option_id || null, answer_text || null],
+        [
+          surveyId,
+          user_id,
+          question_id,
+          option_id || null,
+          answer_text || null,
+        ],
       );
 
       if (rows.affectedRows === 0) {
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ error: 'Failed to submit response' });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          status: StatusCodes.INTERNAL_SERVER_ERROR,
+          message: 'Failed to submit response',
+        });
       }
 
       return res
@@ -27,9 +35,11 @@ export const createResponse = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: 'Failed to submit response' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to submit response',
+    });
   }
 };
 
@@ -45,9 +55,11 @@ export const editResponse = async (req, res) => {
       [response_id],
     );
     if (rows.affectedRows === 0) {
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: 'Failed to delete previous responses' });
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Failed to update responses',
+      });
     }
 
     // 2. 수정된 answers 데이터를 responses 테이블에 다시 삽입
@@ -78,9 +90,11 @@ export const editResponse = async (req, res) => {
       .json({ message: 'Response updated successfully' });
   } catch (error) {
     console.log(error);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: 'Failed to update responses' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      error: 'Failed to update',
+    });
   }
 };
 
@@ -93,10 +107,24 @@ export const deleteResponse = async (req, res) => {
       'DELETE FROM responses WHERE id = ?',
       [response_id],
     );
+
+    if (rows.affectedRows === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Response not found',
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Response deleted successfully',
+    });
   } catch (error) {
     console.log(error);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: 'Failed to delete response' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to delete response',
+    });
   }
 };
