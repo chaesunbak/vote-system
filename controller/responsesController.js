@@ -7,34 +7,37 @@ export const createResponse = async (req, res) => {
   const { user_id, answers } = req.body; // answers는 [{ question_id, option_id, answer_text }, ...] 형태로 전달
 
   try {
+    // responses 테이블에 기본 응답 정보 삽입
+    const [responseResult] = await pool.execute(
+      'INSERT INTO responses (survey_id, user_id) VALUES (?, ?)',
+      [surveyId, user_id],
+    );
+
+    const responseId = responseResult.insertId;
+
+    // response_details 테이블에 각 질문에 대한 상세 응답 삽입
     for (const answer of answers) {
       const { question_id, option_id, answer_text } = answer;
 
       const [rows, fields] = await pool.execute(
-        'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
-        [
-          surveyId,
-          user_id,
-          question_id,
-          option_id || null,
-          answer_text || null,
-        ],
+        'INSERT INTO answer_choices (response_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?)',
+        [responseId, question_id, option_id || null, answer_text || null],
       );
 
       if (rows.affectedRows === 0) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           success: false,
           status: StatusCodes.INTERNAL_SERVER_ERROR,
-          message: 'Failed to submit response',
+          message: 'Failed to submit response details',
         });
       }
-
-      return res
-        .status(StatusCodes.CREATED)
-        .json({ message: 'Response submitted successfully' });
     }
+
+    return res
+      .status(StatusCodes.CREATED)
+      .json({ message: 'Response submitted successfully' });
   } catch (error) {
-    console.log(error);
+    console.error('Error submitting response:', error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       status: StatusCodes.INTERNAL_SERVER_ERROR,
