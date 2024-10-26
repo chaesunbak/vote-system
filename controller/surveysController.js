@@ -68,11 +68,14 @@ export const getSurveys = (req, res) => {
 };
 
 // 개별 설문조사 조회하기 (GET /surveys/:survey_id)
-export const getSurveyById = (req, res) => {
+export const getSurveyById = async (req, res) => {
   const { survey_id } = req.params;
 
   try {
-    const [rows, fields] = await pool.execute('SELECT * FROM surveys WHERE id = ?', [survey_id]);
+    const [rows, fields] = await pool.execute(
+      'SELECT * FROM surveys WHERE id = ?',
+      [survey_id],
+    );
 
     if (rows.length === 0) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -83,7 +86,6 @@ export const getSurveyById = (req, res) => {
     }
 
     return res.status(StatusCodes.OK).json(rows[0]);
-
   } catch (error) {
     console.log(error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -95,7 +97,7 @@ export const getSurveyById = (req, res) => {
 };
 
 // 설문조사 수정하기 (PUT /surveys/:survey_id)
-export const updateSurvey = (req, res) => {
+export const updateSurvey = async (req, res) => {
   const { survey_id } = req.params;
   const { title, description, expires_at } = req.body;
 
@@ -113,7 +115,9 @@ export const updateSurvey = (req, res) => {
       });
     }
 
-    return res.status(StatusCodes.OK).json({ message: 'Survey updated successfully' });
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Survey updated successfully' });
   } catch (error) {
     console.log(error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -125,13 +129,16 @@ export const updateSurvey = (req, res) => {
 };
 
 // 설문조사 삭제하기 (DELETE /surveys/:survey_id)
-export const deleteSurvey = (req, res) => {
+export const deleteSurvey = async (req, res) => {
   const { survey_id } = req.params;
 
   try {
-    const [rows, fields] = await pool.execute('DELETE FROM surveys WHERE id = ?', [survey_id]);
+    const [rows, fields] = await pool.execute(
+      'DELETE FROM surveys WHERE id = ?',
+      [survey_id],
+    );
 
-    if(rows.affectedRows === 0) {
+    if (rows.affectedRows === 0) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
         status: StatusCodes.NOT_FOUND,
@@ -139,8 +146,9 @@ export const deleteSurvey = (req, res) => {
       });
     }
 
-    return res.status(StatusCodes.OK).json({ message: 'Survey deleted successfully' });
-
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Survey deleted successfully' });
   } catch (error) {
     console.log(error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
