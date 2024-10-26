@@ -74,7 +74,12 @@ export const showMostChoiced = async (req, res) => {
     }
     res.status(StatusCodes.OK).json(result);
   } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).end();
+    console.log(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to show most choiced',
+    });
   }
 };
 
@@ -101,6 +106,10 @@ export const showResult = async (req, res) => {
     });
     res.status(StatusCodes.OK).json(result);
   } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).end();
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to show result',
+    });
   }
 };
