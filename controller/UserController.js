@@ -16,13 +16,21 @@ export async function searchUsers(req, res) {
     );
 
     if (rows.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).end();
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'No users found',
+      });
     }
 
     return res.status(StatusCodes.OK).send(rows);
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to search users',
+    });
   }
 }
 
@@ -54,10 +62,22 @@ export async function createUser(req, res) {
         mbti,
       ],
     );
+
+    if (rows.affectedRows === 0) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Failed to create user',
+      });
+    }
     return res.status(StatusCodes.CREATED).end();
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to create user',
+    });
   }
 }
 
@@ -72,13 +92,21 @@ export async function getUser(req, res) {
     );
 
     if (rows.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).end();
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'User not found',
+      });
     }
 
     return res.status(StatusCodes.OK).send(rows[0]);
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to get user',
+    });
   }
 }
 
@@ -88,7 +116,11 @@ export async function getMyProfile(req, res) {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(StatusCodes.UNAUTHORIZED).end();
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      success: false,
+      status: StatusCodes.UNAUTHORIZED,
+      message: 'Unauthorized',
+    });
   }
 
   const JWT_SECRET = process.env.JWT_SECRET;
@@ -96,20 +128,27 @@ export async function getMyProfile(req, res) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    console.log(decoded);
     const [rows, fields] = await pool.execute(
       `SELECT id, username, email, email_verified, promotion_email_consent, mbti FROM users WHERE id = ?`,
       [decoded.id],
     );
 
     if (rows.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).json('User not found');
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'User not found',
+      });
     }
 
     return res.status(StatusCodes.OK).send(rows[0]);
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to get user',
+    });
   }
 }
 
@@ -120,7 +159,11 @@ export async function updateMyProfile(req, res) {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(StatusCodes.UNAUTHORIZED).end();
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      success: false,
+      status: StatusCodes.UNAUTHORIZED,
+      message: 'Unauthorized',
+    });
   }
 
   const JWT_SECRET = process.env.JWT_SECRET;
@@ -156,10 +199,22 @@ export async function updateMyProfile(req, res) {
 
     await pool.execute(sql, values);
 
+    if (rows.affectedRows === 0) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Failed to update user',
+      });
+    }
+
     return res.status(StatusCodes.OK).end();
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to update user',
+    });
   }
 }
 
@@ -168,7 +223,11 @@ export async function deleteMyAccount(req, res) {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(StatusCodes.UNAUTHORIZED).end();
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      success: false,
+      status: StatusCodes.UNAUTHORIZED,
+      message: 'Unauthorized',
+    });
   }
 
   const JWT_SECRET = process.env.JWT_SECRET;
@@ -178,10 +237,22 @@ export async function deleteMyAccount(req, res) {
 
     await pool.execute(`DELETE FROM users WHERE id = ?`, [decoded.id]);
 
+    if (rows.affectedRows === 0) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Failed to delete user',
+      });
+    }
+
     return res.status(StatusCodes.NO_CONTENT).end();
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to delete user',
+    });
   }
 }
 
@@ -191,7 +262,11 @@ export async function changeMyPassword(req, res) {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(StatusCodes.UNAUTHORIZED).end();
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      success: false,
+      status: StatusCodes.UNAUTHORIZED,
+      message: 'Unauthorized',
+    });
   }
 
   const JWT_SECRET = process.env.JWT_SECRET;
@@ -213,10 +288,22 @@ export async function changeMyPassword(req, res) {
       [passwordHash, passwordSalt, decoded.id],
     );
 
+    if (rows.affectedRows === 0) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Failed to change password',
+      });
+    }
+
     return res.status(StatusCodes.OK).end();
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to change password',
+    });
   }
 }
 
@@ -232,7 +319,11 @@ export async function login(req, res) {
     );
 
     if (rows.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).end();
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'User not found',
+      });
     }
 
     const user = rows[0];
@@ -245,7 +336,11 @@ export async function login(req, res) {
     ).toString('base64');
 
     if (passwordHash !== user.password_hash) {
-      return res.status(StatusCodes.NOT_FOUND).end(); // 보안상의 이유로 UNAUTHORIZED대신 NOT_FOUND를 응답해도 됨
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'User not found',
+      }); // 보안상의 이유로 UNAUTHORIZED대신 NOT_FOUND를 응답해도 됨
     }
 
     const JWT_SECRET = process.env.JWT_SECRET;
@@ -273,9 +368,13 @@ export async function login(req, res) {
     });
 
     return res.status(StatusCodes.OK).json({ user: safeUser });
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to login',
+    });
   }
 }
 
@@ -284,7 +383,11 @@ export async function logout(req, res) {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(StatusCodes.OK).end();
+    return res.status(StatusCodes.OK).json({
+      success: false,
+      status: StatusCodes.OK,
+      message: 'Already logged out',
+    });
   }
 
   res.clearCookie('token');
@@ -310,8 +413,12 @@ export async function checkEmailExists(req, res) {
     return res
       .status(StatusCodes.OK)
       .send({ message: '사용 가능한 이메일입니다.' });
-  } catch (err) {
-    console.log(err);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to check email',
+    });
   }
 }
