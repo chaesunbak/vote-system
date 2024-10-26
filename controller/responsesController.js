@@ -10,12 +10,6 @@ export const createResponse = async (req, res) => {
     for (const answer of answers) {
       const { question_id, option_id, answer_text } = answer;
 
-      console.log('survey_id:', surveyId);
-      console.log('user_id:', user_id);
-      console.log('question_id:', question_id);
-      console.log('option_id:', option_id);
-      console.log('answer_text:', answer_text);
-
       const [rows, fields] = await pool.execute(
         'INSERT INTO responses (survey_id, user_id, question_id, option_id, answer_text) VALUES (?, ?, ?, ?, ?)',
         [surveyId, user_id, question_id, option_id || 0, answer_text || ''],
