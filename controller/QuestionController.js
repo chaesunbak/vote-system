@@ -15,25 +15,38 @@ export const addQuestion = async (req, res) => {
     order_num,
     required,
   ];
-  let [questions_results] = await pool.execute(questions_sql, questions_values);
-  let question_id = questions_results.insertId;
 
-  // question_options 테이블 삽입
-  let question_options_sql = `INSERT INTO question_options (question_id, option_text, question_num) VALUES ?;`;
+  try {
+    let [questions_results] = await pool.execute(
+      questions_sql,
+      questions_values,
+    );
+    let question_id = questions_results.insertId;
 
-  // items는 배열로 받아오기 때문에 요소들을 하나씩 꺼냄
-  let question_options_values = options.map((options) => [
-    question_id,
-    options.option_text,
-    options.question_num,
-  ]);
+    // question_options 테이블 삽입
+    let question_options_sql = `INSERT INTO question_options (question_id, option_text, question_num) VALUES ?;`;
 
-  // 오류가 발생할 수 있으므로 query로 계속 진행
-  let [question_options_results] = await pool.query(question_options_sql, [
-    question_options_values,
-  ]);
+    // items는 배열로 받아오기 때문에 요소들을 하나씩 꺼냄
+    let question_options_values = options.map((options) => [
+      question_id,
+      options.option_text,
+      options.question_num,
+    ]);
 
-  return res.status(StatusCodes.OK).json(question_options_results);
+    // 오류가 발생할 수 있으므로 query로 계속 진행
+    let [question_options_results] = await pool.query(question_options_sql, [
+      question_options_values,
+    ]);
+
+    return res.status(StatusCodes.OK).json(question_options_results);
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to add question',
+    });
+  }
 };
 
 export const allQuestion = async (req, res) => {
@@ -47,12 +60,20 @@ export const allQuestion = async (req, res) => {
     const [rows, fields] = await pool.execute(sql, surveyId);
 
     if (rows.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).end();
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Question not found',
+      });
     }
     return res.status(StatusCodes.OK).json(rows);
   } catch (error) {
     console.log(error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to get question',
+    });
   }
 };
 
@@ -72,13 +93,21 @@ export const editQuestion = async (req, res) => {
     const [rows, fields] = await pool.execute(sql, values);
 
     if (rows.affectedRows === 0) {
-      return res.status(StatusCodes.NOT_FOUND).end();
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Question not found',
+      });
     }
 
     return res.status(StatusCodes.OK).end();
   } catch (error) {
     console.log(error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to edit question',
+    });
   }
 };
 
@@ -103,13 +132,21 @@ export const editOptions = async (req, res) => {
     const [rows, fields] = await pool.execute(sql, values);
 
     if (rows.affectedRows === 0) {
-      return res.status(StatusCodes.NOT_FOUND).end();
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Option not found',
+      });
     }
 
     return res.status(StatusCodes.OK).end();
   } catch (error) {
     console.log(error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to edit option',
+    });
   }
 };
 
@@ -123,13 +160,21 @@ export const deleteQuestion = async (req, res) => {
     const [rows, fields] = await pool.execute(question_sql, questionId);
 
     if (rows.affectedRows === 0) {
-      return res.status(StatusCodes.NOT_FOUND).end();
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Question not found',
+      });
     }
 
     return res.status(StatusCodes.OK).end();
   } catch (error) {
     console.log(error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to delete question',
+    });
   }
 };
 // ???
@@ -144,12 +189,20 @@ export const deleteOption = async (req, res) => {
     const [rows, fields] = await pool.execute(option_sql, optionId);
 
     if (rows.affectedRows === 0) {
-      return res.status(StatusCodes.NOT_FOUND).end();
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'Option not found',
+      });
     }
 
     return res.status(StatusCodes.OK).end();
   } catch (error) {
     console.log(error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to delete option',
+    });
   }
 };
