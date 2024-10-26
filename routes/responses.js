@@ -1,21 +1,19 @@
-const express = require('express');
-const router = express.Router({ mergeParams: true }); // poll_id를 받기 위해 mergeParams 사용
-const {
-  responseVote,
-  responseEdit,
-  responseDelete
-} = require('../controller/responsesController'); // 컨트롤러 불러옴
+import { Router } from 'express';
+import {
+  createResponse,
+  editResponse,
+  deleteResponse,
+} from '../controller/responsesController.js';
 
-router.use(express.json()); // POST를 사용하면 값을 json형태로 받아오기 때문에 추가
-
+const router = Router({ mergeParams: true });
 
 // 설문에 응답하기
-router.post('/', responseVote)
+router.post('/', createResponse);
 
 // 응답 수정하기
-router.put('/:response_id', responseEdit)
+router.put('/:response_id', editResponse);
 
 // 응답 삭제하기
-router.delete('/:response_id', responseDelete)
+router.delete('/:response_id', deleteResponse);
 
-module.exports = router;
+export default router;
