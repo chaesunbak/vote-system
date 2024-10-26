@@ -49,7 +49,7 @@ export async function createUser(req, res) {
   const choseong = getChoseong(userName);
 
   try {
-    await pool.execute(
+    const [rows, fields] = await pool.execute(
       `INSERT INTO users (username, email, password_hash, password_salt, choseong, promotion_email_consent, mbti)
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
