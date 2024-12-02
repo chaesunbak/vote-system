@@ -2,32 +2,31 @@ import pool from '../mariadb.js';
 import { StatusCodes } from 'http-status-codes';
 
 export const showMostChoiced = async (req, res) => {
+  const { survey_id } = req.params;
+  let { mbti } = req.query;
   try {
-    const surveyId = req.params.surveyId;
-    let { mbti } = req.query;
     mbti = mbti === 'true';
 
-    let surveyTitle, totalVoteCount, mostChoiced;
     let mostChoicedNames = [];
 
-    [surveyTitle] = await pool.execute(
+    const [surveyTitle] = await pool.execute(
       `SELECT title FROM surveys WHERE id = ?`,
-      [surveyId],
+      [survey_id],
     );
 
-    [totalVoteCount] = await pool.execute(
+    const [totalVoteCount] = await pool.execute(
       `SELECT count(*) FROM responses WHERE survey_id = ?`,
-      [surveyId],
+      [survey_id],
     );
 
-    [mostChoiced] = await pool.execute(
+    const [mostChoiced] = await pool.execute(
       `WITH OptionCounts AS (
     SELECT option_id, COUNT(*) AS count
     FROM answer_choices
     WHERE response_id IN (SELECT id FROM responses WHERE survey_id = ?)
     GROUP BY option_id) SELECT option_id, count
     FROM OptionCounts WHERE count = (SELECT MAX(count) FROM OptionCounts);`,
-      [surveyId],
+      [survey_id],
     );
 
     for (let answer of mostChoiced) {
@@ -74,16 +73,23 @@ export const showMostChoiced = async (req, res) => {
     }
     res.status(StatusCodes.OK).json(result);
   } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).end();
+    console.log(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to show most choiced',
+    });
   }
 };
 
 export const showResult = async (req, res) => {
-  const surveyId = req.params.surveyId;
+  const { survey_id } = req.params;
+
+  console.log(survey_id);
   try {
-    let sql = `SELECT option_id, COUNT(*) AS count FROM answer_choices
+    const sql = `SELECT option_id, COUNT(*) AS count FROM answer_choices
              WHERE question_id = ? GROUP BY option_id; `;
-    const [optionsCount] = await pool.execute(sql, [surveyId]);
+    const [optionsCount] = await pool.execute(sql, [survey_id]);
 
     const result = [];
     for (let option of optionsCount) {
@@ -101,6 +107,11 @@ export const showResult = async (req, res) => {
     });
     res.status(StatusCodes.OK).json(result);
   } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).end();
+    console.log(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'Failed to show result',
+    });
   }
 };

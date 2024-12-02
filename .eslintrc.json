@@ -1,9 +1,10 @@
 {
   "extends": ["plugin:prettier/recommended"],
 
-  "plugins": ["prettier"],
+  "plugins": ["prettier", "unicorn"],
 
   "rules": {
-    "prettier/prettier": "warning"
+    "prettier/prettier": "warning",
+    "unicorn/catch-error-name": ["error", { "name": "error" }]
   }
 }

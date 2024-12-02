@@ -5,10 +5,14 @@ export const createMbti = async (req, res) => {
   try {
     const { mbti_data } = req.body;
     return await getMbti(mbti_data);
-  } catch (err) {
+  } catch (error) {
+    console.log(error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Failed to create MBTI',
-      error: err,
+      error: {
+        sucess: false,
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Failed to update MBTI',
+      },
     });
   }
 };
@@ -37,19 +41,24 @@ export const updateMbti = async (req, res) => {
 
   try {
     const [result] = await pool.execute(query, values);
-    if (result.affectedRows > 0) {
-      res.status(StatusCodes.OK).json({
-        message: 'MBTI updated successfully',
-      });
-    } else {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Failed to update MBTI',
+
+    if (result.affectedRows === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        sucess: false,
+        status: StatusCodes.NOT_FOUND,
+        message: 'MBTI not found',
       });
     }
-  } catch (err) {
+
+    res.status(StatusCodes.OK).json({
+      message: 'MBTI updated successfully',
+    });
+  } catch (error) {
+    console.log(error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      sucess: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
       message: 'Failed to update MBTI',
-      error: err,
     });
   }
 };
@@ -57,21 +66,26 @@ export const updateMbti = async (req, res) => {
 // MBTI에 있는 JSON 데이터 출력
 export const getMbtiData = async (req, res) => {
   const { userId } = req.params;
-  let query = `SELECT mbti FROM users WHERE user_id = ?`;
+  const query = `SELECT mbti FROM users WHERE user_id = ?`;
 
   try {
     const [rows] = await pool.execute(query, [userId]);
-    if (rows.length > 0) {
-      res.status(StatusCodes.OK).json(rows[0].mbti);
-    } else {
-      res.status(StatusCodes.NOT_FOUND).json({
+
+    if (rows.length === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        sucess: false,
+        status: StatusCodes.NOT_FOUND,
         message: 'MBTI not found',
       });
     }
-  } catch (err) {
+
+    res.status(StatusCodes.OK).json(rows[0].mbti);
+  } catch (error) {
+    console.log(error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      sucess: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
       message: 'Failed to retrieve MBTI data',
-      error: err,
     });
   }
 };
@@ -84,23 +98,28 @@ export const getMbtiText = async (req, res) => {
 
   try {
     const [rows] = await pool.execute(query, [userId]);
-    if (rows.length > 0) {
-      const mbtiData = rows[0].mbti;
-      mbtiData.extrovert >= 50 ? (MBTI += 'E') : (MBTI += 'I');
-      mbtiData.sensing >= 50 ? (MBTI += 'S') : (MBTI += 'N');
-      mbtiData.thinking >= 50 ? (MBTI += 'T') : (MBTI += 'F');
-      mbtiData.judging >= 50 ? (MBTI += 'J') : (MBTI += 'P');
 
-      res.status(StatusCodes.OK).json({ MBTI });
-    } else {
-      res.status(StatusCodes.NOT_FOUND).json({
+    if (rows.length === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        sucess: false,
+        status: StatusCodes.NOT_FOUND,
         message: 'MBTI not found',
       });
     }
-  } catch (err) {
+
+    const mbtiData = rows[0].mbti;
+    mbtiData.extrovert >= 50 ? (MBTI += 'E') : (MBTI += 'I');
+    mbtiData.sensing >= 50 ? (MBTI += 'S') : (MBTI += 'N');
+    mbtiData.thinking >= 50 ? (MBTI += 'T') : (MBTI += 'F');
+    mbtiData.judging >= 50 ? (MBTI += 'J') : (MBTI += 'P');
+
+    res.status(StatusCodes.OK).json({ MBTI });
+  } catch (error) {
+    console.log(error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      sucess: false,
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
       message: 'Failed to retrieve MBTI data',
-      error: err,
     });
   }
 };
@@ -130,7 +149,7 @@ export async function getMbti(mbti_data) {
     } else {
       return { message: 'Failed to update MBTI' };
     }
-  } catch (err) {
+  } catch (error) {
     throw new Error('Failed to update MBTI');
   }
 }
